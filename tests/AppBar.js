@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corp.  All Rights Reserved. Licensed under the MIT License. See License.txt in the project root for license information.
 
 describe("AppBar control directive tests", function () {
-    var testTimeout = 5000;
+    var testTimeout = 1000;
 
     var scope,
         compile;
@@ -68,43 +68,62 @@ describe("AppBar control directive tests", function () {
         expect(compiledControl.winControl.opened).toBeTruthy();
     });
 
-    it("should use the onopen and onclose event handlers and opened attribute", function () {
-        var gotBeforeOpenEvent = false,
-            gotAfterOpenEvent = false,
-            gotBeforeCloseEvent = false,
-            gotAfterCloseEvent = false;
+    var gotBeforeOpenEvent = false,
+        gotAfterOpenEvent = false,
+        gotBeforeCloseEvent = false,
+        gotAfterCloseEvent = false;
+
+    function initEvent(scope) {
+        console.log('initEvent');
         scope.beforeOpenEventHandler = function (e) {
             gotBeforeOpenEvent = true;
+            console.log('beforeOpenEventHandler');
         };
         scope.afterOpenEventHandler = function (e) {
             gotAfterOpenEvent = true;
+            console.log('afterOpenEventHandler');
         };
         scope.beforeCloseEventHandler = function (e) {
             gotBeforeCloseEvent = true;
+            console.log('beforeCloseEventHandler');
         };
         scope.afterCloseEventHandler = function (e) {
             gotAfterCloseEvent = true;
+            console.log('afterCloseEventHandler');
         };
         scope.appbarOpened = false;
-        var compiledControl = initControl("<win-app-bar on-before-open='beforeOpenEventHandler($event)' on-after-open='afterOpenEventHandler($event)' " +
+        return initControl("<win-app-bar on-before-open='beforeOpenEventHandler($event)' on-after-open='afterOpenEventHandler($event)' " +
                                            "on-before-close='beforeCloseEventHandler($event)' on-after-close='afterCloseEventHandler($event)' opened='appbarOpened'></win-app-bar>");
-        runs(function () {
+    }
+    
+    describe("open the AppBar's", function () {
+        beforeEach(function (done) {
+            var compiledControl = initEvent(scope);
             compiledControl.winControl.open();
+            done();
         });
 
-        waitsFor(function () {
-            return (gotBeforeOpenEvent && gotAfterOpenEvent);
-        }, "the AppBar's before+aftershow events", testTimeout);
+        it("before+aftershow events", function (done) {
+                setTimeout(function(){
+                    expect(gotBeforeOpenEvent&&gotAfterOpenEvent).toBe(true);
+                    done();
+                }, testTimeout);
+        });
 
-        runs(function () {
+        afterEach(function (done) {
             expect(scope.appbarOpened).toBeTruthy();
             scope.appbarOpened = false;
             scope.$digest();
+            done();
         });
-
-        waitsFor(function () {
-            return (gotBeforeCloseEvent && gotAfterCloseEvent);
-        }, "the AppBar's before+afterhide events", testTimeout);
+    });
+    describe("close the AppBar's", function () {
+        it("before+afterhide events", function (done) {
+            setTimeout(function(){
+                expect(gotBeforeCloseEvent&&gotAfterCloseEvent).toBe(true);
+                done();
+            }, testTimeout);
+        });
     });
 
     afterEach(function () {
